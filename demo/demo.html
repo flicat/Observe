@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="utf-8">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <meta name="format-detection" content="telephone=no,email=no">
+    <title>mvvm</title>
+    <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+    <script src="../dist/observe.js"></script>
+    <script>
+        var data = new Observe({
+            arr: [0,1,2,3,4,5,6],
+            test: {
+                a: 12,
+                b: 23
+            },
+            value: 456,
+            method: function() {
+                return 789
+            }
+        }, function(val) {
+            alert(val);
+        });
+
+        data.test.a = 'test';
+        data.value = 'value';
+        data.arr[0] = 99;
+        data.arr.push(10);
+
+        setTimeout(function() {
+            data.value = 789;
+        }, 1000);
+    </script>
+</body>
+</html>
