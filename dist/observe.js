@@ -6,42 +6,43 @@
 
 var Observe = (function() {
 
-    Object.prototype.forEachIn = function(callback) {
-        for(var key in this){
-            if(this.hasOwnProperty(key)){
-                callback(key, this[key]);
-            }
-        }
-    };
-
     Array.prototype.forEach = Array.prototype.forEach || function(callback) {
-        for(var i = 0, len = this.length; i< len; i++){
-            callback(this[i], i);
-        }
-    };
+            for(var i = 0, len = this.length; i< len; i++){
+                callback(this[i], i);
+            }
+        };
 
-    // ÅÐ¶ÏÊÇ·ñÊÇ¶ÔÏó
+    // åˆ¤æ–­æ˜¯å¦æ˜¯å¯¹è±¡
     var isObject = function (obj) {
         return ({}).toString.call(obj) === "[object Object]"
     };
-    // ÅÐ¶ÏÊÇ·ñÊÇÊý×é
+    // åˆ¤æ–­æ˜¯å¦æ˜¯æ•°ç»„
     var isArray = Array.isArray || function (obj) {
             return ({}).toString.call(obj) === '[object Array]';
         };
-    // ÅÐ¶ÏÊÇ·ñÊÇº¯Êý
+    // åˆ¤æ–­æ˜¯å¦æ˜¯å‡½æ•°
     var isFunction = function (obj) {
         return ({}).toString.call(obj) === "[object Function]"
+    };
+
+    // å¯¹è±¡éåŽ†
+    var forEachIn = function(object, callback) {
+        for(var key in object){
+            if(object.hasOwnProperty(key)){
+                callback(key, object[key]);
+            }
+        }
     };
 
     var defineProperty = Object.defineProperty;
     var defineProperties = Object.defineProperties;
     try {
-        // IE8ÏÂ²»Ö§³Ö¶¨Òå¶ÔÏó
+        // IE8ä¸‹ä¸æ”¯æŒå®šä¹‰å¯¹è±¡
         defineProperty({}, '_', {
             value: 'test'
         })
     } catch (e) {
-        // ¾É°æ±¾ä¯ÀÀÆ÷
+        // æ—§ç‰ˆæœ¬æµè§ˆå™¨
         if ('__defineGetter__' in {}) {
             defineProperty = function(obj, prop, desc) {
                 if ('get' in desc) {
@@ -59,7 +60,7 @@ var Observe = (function() {
             };
         }
         else if (!defineProperties && window.VBArray) {
-            // IE8ÒÔÏÂÊ¹ÓÃvbscript
+            // IE8ä»¥ä¸‹ä½¿ç”¨vbscript
             window.execScript([
                 'Function vb_global_eval(code)',
                 'ExecuteGlobal(code)',
@@ -117,19 +118,19 @@ var Observe = (function() {
         }
     }
     var Observe = function(target, callback) {
-        this.callback = callback;        // ¼àÌý»Øµ÷
+        this.callback = callback;        // ç›‘å¬å›žè°ƒ
 
-        // ±éÀúÊôÐÔ
+        // éåŽ†å±žæ€§
         var propArr = [];
-        target.forEachIn(function(key) {
+        forEachIn(target, function(key) {
             propArr.push(key);
         });
 
-        // ·µ»Ø±»°ü×°µÄ¶ÔÏó
+        // è¿”å›žè¢«åŒ…è£…çš„å¯¹è±¡
         return this.watch(target, propArr);
     };
     Observe.prototype.rewrite = function(array) {
-        // Èç¹ûÊÇÊý×éÔò¼àÌýÊý×éÐÞ¸Ä·½·¨
+        // å¦‚æžœæ˜¯æ•°ç»„åˆ™ç›‘å¬æ•°ç»„ä¿®æ”¹æ–¹æ³•
         var that = this;
         ["concat", "every", "filter", "forEach", "indexOf", "join",
             "lastIndexOf", "map", "pop", "push",
@@ -137,17 +138,18 @@ var Observe = (function() {
             "shift", "slice", "some", "sort", "splice", "unshift",
             "toLocaleString","toString","size"].forEach(function(item, i) {
                 if(isFunction(array[item])){
-                    // ÖØÐ´Êý×é·½·¨
+                    // é‡å†™æ•°ç»„æ–¹æ³•
                     array[item] = function () {
-                        var result = Array.prototype[item].apply(this, Array.prototype.slice.call(arguments));
+                        var arr = this;
+                        var result = Array.prototype[item].apply(arr, Array.prototype.slice.call(arguments));
                         if(/^concat|pop|push|reverse|shift|sort|splice|unshift|size$/ig.test(item)) {
-                            // Êý×é¸Ä¶¯ÔòÖØÐÂ¼àÌý
+                            // æ•°ç»„æ”¹åŠ¨åˆ™é‡æ–°ç›‘å¬
                             var propArr = [];
-                            this.forEachIn(function(key) {
-                                !isFunction(this[key]) && propArr.push(key);
+                            forEachIn(arr, function(key) {
+                                !isFunction(arr[key]) && propArr.push(key);
                             });
-                            that.callback(this.length);
-                            that.watch(this, propArr);
+                            that.callback(arr.length);
+                            that.watch(arr, propArr);
                         }
                         return result;
                     };
@@ -159,11 +161,11 @@ var Observe = (function() {
         var that = this;
         var props = {};
 
-        // »º´æ¶ÔÏó£¬ÓÃÓÚ´æÈ¡Öµ£¨²»ÖÁÓÚÏÝÈëËÀÑ­»·£©
+        // ç¼“å­˜å¯¹è±¡ï¼Œç”¨äºŽå­˜å–å€¼ï¼ˆä¸è‡³äºŽé™·å…¥æ­»å¾ªçŽ¯ï¼‰
         var observeProps = {};
 
         if(isArray(data)){
-            // Èç¹ûÊÇÊý×éÔòÐÞ¸ÄÊý×é·½·¨
+            // å¦‚æžœæ˜¯æ•°ç»„åˆ™ä¿®æ”¹æ•°ç»„æ–¹æ³•
             that.rewrite(data);
         }
 
@@ -179,17 +181,17 @@ var Observe = (function() {
                 }
             };
 
-            // ±éÀú¶ÔÏó
+            // éåŽ†å¯¹è±¡
             if(isObject(data[key]) || isArray(data[key])){
                 var subPropArr = [];
 
-                data[key].forEachIn(function(key) {
+                forEachIn(data[key], function(key) {
                     subPropArr.push(key);
                 });
 
                 var observer = that.watch(data[key], subPropArr);
                 if(isObject(data[key])){
-                    // ÔÚIEÏÂ¶¨Òåºó·µ»ØµÄÊÇobject£¬»á¸²¸ÇÊý×é·½·¨£¬¹ÊÖ»ÐÞ¸Ä object
+                    // åœ¨IEä¸‹å®šä¹‰åŽè¿”å›žçš„æ˜¯objectï¼Œä¼šè¦†ç›–æ•°ç»„æ–¹æ³•ï¼Œæ•…åªä¿®æ”¹ object
                     observeProps[key] = data[key] = observer;
                 }
             }
