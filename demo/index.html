@@ -10,30 +10,36 @@
     <link rel="stylesheet" href="css/style.css"/>
 </head>
 <body>
-    <script src="../dist/observe.js"></script>
+    <script src="../src/observe.js"></script>
     <script>
         var data = new Observe({
             arr: [0,1,2,3,4,5,6],
             test: {
                 a: 12,
-                b: 23
+                b: 23,
+                sum: function() {
+                    return data.test.a + data.test.b;
+                }
             },
             value: 456,
-            method: function() {
-                return 789
+            add: function(num) {
+                return num + 1;
             }
         }, function(val) {
-            alert(val);
+            console.log(val);
         });
 
         data.test.a = 'test';
         data.value = 'value';
         data.arr[0] = 99;
         data.arr.push(10);
-
+//
         setTimeout(function() {
             data.value = 789;
         }, 1000);
+
+        console.log(data.test.sum());
+
     </script>
 </body>
 </html>

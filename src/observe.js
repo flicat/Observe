@@ -117,21 +117,26 @@ var Observe = (function() {
             }
         }
     }
-    var Observe = function(target, callback) {
-        this.callback = callback;        // 监听回调
+
+
+    var Observe = function(data, callback) {
+        this.data = data;
+        this.callback = callback;
 
         // 遍历属性
         var propArr = [];
-        forEachIn(target, function(key) {
+        forEachIn(data, function(key) {
             propArr.push(key);
         });
 
         // 返回被包装的对象
-        return this.watch(target, propArr);
+        return this.watch(data, propArr);
     };
+
     Observe.prototype.rewrite = function(array) {
-        // 如果是数组则监听数组修改方法
         var that = this;
+
+        // 如果是数组则监听数组修改方法
         ["concat", "every", "filter", "forEach", "indexOf", "join",
             "lastIndexOf", "map", "pop", "push",
             "reduce", "reduceRight", "reverse",
@@ -155,10 +160,12 @@ var Observe = (function() {
                     };
                 }
             });
-    };
-    Observe.prototype.watch = function(data, propArr) {
 
+    };
+
+    Observe.prototype.watch = function(data, propArr) {
         var that = this;
+
         var props = {};
 
         // 缓存对象，用于存取值（不至于陷入死循环）
@@ -170,7 +177,9 @@ var Observe = (function() {
         }
 
         propArr.forEach(function(key) {
+
             observeProps[key] = data[key];
+
             props[key] = {
                 get: function() {
                     return observeProps[key];
@@ -200,6 +209,6 @@ var Observe = (function() {
         return defineProperties(data, props);
     };
 
-    return  Observe;
+    return Observe;
 
 })();
